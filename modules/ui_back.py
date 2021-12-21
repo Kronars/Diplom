@@ -1,8 +1,8 @@
-from main_win_code import Ui_MainWindow
+from modules.main_win_code import Ui_MainWindow
+from modules.classes import Quad, Prop, Spares_stats
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import numpy as np
-from classes import Quad, Prop, Spares_stats
 
 # pyuic5 C:\Users\Senya\Prog_2\Kyrsach\Proga\main_win.ui -o C:\Users\Senya\Prog_2\Kyrsach\Proga\main_win_code.py
 
