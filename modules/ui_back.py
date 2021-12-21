@@ -1,5 +1,5 @@
 from modules.main_win_code import Ui_MainWindow
-from modules.classes import Quad, Prop, Props_data
+from modules.classes import Prop_stats, Prop, Props_data
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import numpy as np
@@ -17,7 +17,7 @@ class Ui_backend(Ui_MainWindow):
         self.data = Props_data(prop=True)
         self.prop = Prop(self.data, 5, 5)
         self.prop.get_real_props()
-        self.stats = Quad(self.prop)
+        self.stats = Prop_stats(self.prop)
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
@@ -115,7 +115,7 @@ class Ui_backend(Ui_MainWindow):
             self.prop = Prop(self.data, self.d_num.value(), self.p_num.value(), self.rpm_num.value())
         else:
             self.prop = Prop(self.data, self.prop.d, self.prop.p, self.rpm_num.value())
-        self.stats = Quad(self.prop)
+        self.stats = Prop_stats(self.prop)
         thrust = int(self.stats.calc_thrust(self.rpm_num.value()))
         power = int(self.stats.calc_power(self.rpm_num.value()))
         self.thr_vals.setText(f'{round(thrust, 5)} Н\n{round(thrust / 9.806, 5)} кгС\n{round(thrust / 9.806 * 1000, 5)} гС')

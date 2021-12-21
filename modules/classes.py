@@ -45,9 +45,6 @@ class Prop(Props_data):
                      формат списка - [диаметр, шаг, аббревиатура, имя файла]
     elect_this - получает на вход список параметров, подставляет их в атрибуты класса
     '''
-    selection = [[1, 1, 'пропеллер не определён', 'пропеллер не определён']]
-    name = 'ancf'
-    work_name = 'ancf_10x5_static_0755od.txt'
 
     def __init__(self, d: float, p: float, rpm=5000, tk=0.16, pk=0.1):
         '''Параметры:
@@ -59,6 +56,10 @@ class Prop(Props_data):
         self.tk = float(tk)
         self.pk = float(pk)
 
+        self.selection = [[10, 5, 'пропеллер не определён', 'пропеллер не определён']]
+        self.name = 'ancf'
+        self.work_name = 'ancf_10x5_static_0755od.txt'
+
     def elect_this(self, data):
         """Получает список пропа в формате [диаметр, шаг, аббревиатура, имя файла] и меняет атрибуты объекта"""
         self.d = data[0]
@@ -67,7 +68,7 @@ class Prop(Props_data):
         self.work_name = data[3]
         self.tk = Prop.get_k(self, self.rpm, 't')
         self.pk = Prop.get_k(self, self.rpm, 'p')
-            
+
     def get_k(self, rpm, mode):
         t_white_list, p_white_list = ['tk', 't', 'thrust'], ['pk', 'p', 'power']
         if mode in t_white_list:
@@ -85,7 +86,7 @@ class Prop(Props_data):
         y = np.array([float(i[ind]) for i in data])
         return np.interp(rpm, x, y)
 
-    def get_real_props(self, d=None, p=None, limit=7):
+    def get_real_props(self, d=None, p=None, limit=20):
         """Подбирает список наиболее похожих пропов в БД,
         если не передать диаметр и шаг явно - возьмёт их из объекта пропа"""
         data = self.data
@@ -157,62 +158,65 @@ class Prop(Props_data):
             else:
                 selection = filter(lambda x: p_near == x[1], data)
             repl = list(sorted(selection, key=lambda x: delta(p_near, x[1]) if d_diff < p_diff else delta(d_near, x[0])))
-            Prop.name = repl[0][2]
-            Prop.work_name = repl[0][3]
-            Prop.selection = repl
+            self.name = repl[0][2]
+            self.work_name = repl[0][3]
+            self.selection = repl
             return repl[:limit]
 
-class Quad:
+class Prop_stats(Prop):
     '''Считает статисику переданных в класс объектов деталей'''
-    def __init__(self, prop, rpm=5000):
-        self.prop = prop
-        self.prop_name = prop.name
-        self.prop_work_name = prop.work_name
-        self.prop_inf = f'Диаметр {prop.selection[0][0]}, шаг {prop.selection[0][1]} имя {prop.selection[0][3]}'
-        self.d = prop.d
-        self.d_cm = prop.d / 39.37
-        self.p = prop.p
-        self.tk = prop.tk
-        self.pk = prop.pk
-        self.rpm = rpm
+    def __init__(self, d: float, p: float, rpm=5000, tk=0.16, pk=0.1):
+        super().__init__(d, p)
+        self.path_to_plots = os.path.join(os.getcwd(), 'Diplom', 'data')
+        # self.prop = prop
+        # self.prop_name = prop.name
+        # self.prop_work_name = prop.work_name
+        # self.d = prop.d
+        # self.p = prop.p
+        # self.tk = prop.tk
+        # self.pk = prop.pk
+        # self.rpm = rpm
+        # data = Props_data()
+        self.d_cm = self.d / 39.37
         self.air_density = 1.2754
-        data = Props_data()
-        self.prop_tp_data = data.get_prop_data(self.prop_work_name)
+        self.prop_tp_data = self.get_prop_data(self.work_name)
+        
+    def inf(self):
+        return f'Диаметр {self.d}, шаг, {self.p} имя {self.work_name}'
 
     def calc_thrust(self, rpm, g=False):
         rpm = int(rpm)
-        if g:
-            return (self.tk * self.air_density * (rpm / 60) ** 2 * self.d_cm ** 4) / 9.806 * 1000
-        return self.tk * self.air_density * (rpm / 60) ** 2 * self.d_cm ** 4
+        thrust = self.tk * self.air_density * (rpm / 60) ** 2 * self.d_cm ** 4
+        return thrust * 9806 if g else thrust
     
     def calc_power(self, rpm):
         rpm = int(rpm)
         return self.pk * self.air_density * (rpm / 60) ** 3 * self.d_cm ** 5
     
-    def draw_prop_stats(self, path, rpm_x=5000):
+    def draw_prop_stats(self, rpm_x=5000):
         data = self.prop_tp_data
         f, (th_ax, pw_ax) = plt.subplots(1, 2, gridspec_kw={'wspace': 0.3})
         f.set_size_inches(8.3, 3.8)
         
         rpms = np.linspace(data[0][0] - 400, data[-1][0], 20)
-        thr_rpm_y = Quad.calc_thrust(self, rpm_x, g=1)
-        pwr_rpm_y = Quad.calc_power(self, rpm_x)
-        thr = np.array([(Quad.calc_thrust(self, i, g=1)) for i in rpms])
-        pwr = np.array([(Quad.calc_power(self, i)) for i in rpms])
+        thr_rpm_y = Prop_stats.calc_thrust(self, rpm_x, g=1)
+        pwr_rpm_y = Prop_stats.calc_power(self, rpm_x)
+        thr = np.array([(Prop_stats.calc_thrust(self, i, g=1)) for i in rpms])
+        pwr = np.array([(Prop_stats.calc_power(self, i)) for i in rpms])
 
         th_ax.plot(rpms, thr, color='orange')
         th_ax.scatter(rpm_x, thr_rpm_y, marker='x', c='red')
         th_ax.grid(linestyle='--')
-        th_ax.set_title('График тяги ' + self.prop_name)
+        th_ax.set_title('График тяги ' + self.name)
         th_ax.set_xlabel('Обороты в минуту')
         th_ax.set_ylabel('Грамм-силы')
 
         pw_ax.plot(rpms, pwr)
         pw_ax.scatter(rpm_x, pwr_rpm_y, marker='x', c='red')
         pw_ax.grid(linestyle='--')
-        pw_ax.set_title('График требуемой мощности ' + self.prop_name)
+        pw_ax.set_title('График требуемой мощности ' + self.name)
         pw_ax.set_xlabel('Обороты в минуту')
         pw_ax.set_ylabel('Ватт')
 
-        plt.savefig(path + r'\plot.png')
+        plt.savefig(os.path.join(self.path_to_plots, '\plot.png'))
         return f
