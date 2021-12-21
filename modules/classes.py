@@ -76,7 +76,7 @@ class Prop(Props_data):
         elif mode in p_white_list:
             ind = 2
         else:
-            raise "mode указан неверно"
+            raise f"неверно указан режим, получен - {mode}, ожидается: {t_white_list} или {p_white_list}"
         try:
             data = Props_data.get_prop_data(self, self.work_name)
         except AttributeError:
@@ -85,6 +85,20 @@ class Prop(Props_data):
         x = np.array([float(i[0]) for i in data])
         y = np.array([float(i[ind]) for i in data])
         return np.interp(rpm, x, y)
+
+    def sorted_props(self, param, mode):
+        '''Сортирует все пропы по одному param
+        modes:
+        'd' - сортировка по диаметрам 
+        'p' - сортировка по шагу'''
+        if mode == 'd':
+            nums = self.d_keys
+        elif mode == 'p':
+            nums = self.p_keys
+        else:   raise f"неверно указан режим, получен - {mode}, ожидается: 'd' или 'p'"
+        delta = lambda x: param - x if param > x else x - param
+        return sorted(nums, key=delta)
+
 
     def get_real_props(self, d=None, p=None, limit=20):
         """Подбирает список наиболее похожих пропов в БД,

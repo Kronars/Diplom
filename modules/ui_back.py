@@ -4,8 +4,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import numpy as np
 
-# pyuic5 C:\Users\Senya\Prog_2\Kyrsach\Proga\main_win.ui -o C:\Users\Senya\Prog_2\Kyrsach\Proga\main_win_code.py
-
 class Ui_backend(Ui_MainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -14,10 +12,11 @@ class Ui_backend(Ui_MainWindow):
         self.D_MIN = 2
         self.P_MIN = 0.7
 
-        self.data = Props_data(prop=True)
-        self.prop = Prop(self.data, 5, 5)
-        self.prop.get_real_props()
-        self.stats = Prop_stats(self.prop)
+        # self.data = Props_data(prop=True)
+        # self.prop = Prop(self.data, 5, 5)
+        # self.prop.get_real_props()
+        # self.stats = Prop_stats(self.prop)
+        self.stats = Prop_stats(5, 5)
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
@@ -127,7 +126,6 @@ class Ui_backend(Ui_MainWindow):
         self.stats.draw_prop_stats(r'C:\Users\Senya\Prog_2\Kyrsach\Proga', self.rpm_num.value())
         pixmap = QtGui.QPixmap(r'C:\Users\Senya\Prog_2\Kyrsach\Proga\plot.png')
         self.plot_pic.setPixmap(pixmap)
-    
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
