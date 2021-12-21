@@ -1,27 +1,26 @@
+import os
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
-class Spares_stats:
-    def __init__(self, prop=False, motor=False, batt=False):
+class Props_data:
+    def __init__(self):
         '''Создаёт объект данных выбранной детали
         Атрибуты: 
-        data: список [диаметр, шаг, аббревиатура, имя файла]s
+        data: 2д список [диаметр, шаг, аббревиатура, имя файла]
         d_keys: сортированные диаметры без повторений
         p_keys: сортированные шаги без повторений'''
-        self.path_to_prop_spec = 'C:\\Users\\Senya\\Prog_2\\Kyrsach\\Proga\\prop_spec.csv'
-        self.path_to_Thrust_data = 'C:\\Users\\Senya\\Prog_2\\Kyrsach\\Proga\\Thrust_data\\'
-        if prop:
-            self.data = Spares_stats.create_prop_sizes(self)
-            self.d_keys = sorted(set([i[0] for i in self.data]))
-            self.p_keys = sorted(set([i[1] for i in self.data]))
-        if motor:
-            pass
-        if batt:
-            pass
+        work_dir = os.getcwd()
         
-    def create_prop_sizes(self) -> list:
-        """Возвращает список [диаметр, шаг, аббревиатура, имя файла]"""
+        self.path_to_prop_spec = os.path.join(work_dir, 'Diplom', 'data', 'prop_spec.csv')
+        self.path_to_Thrust_data = os.path.join(work_dir, 'Diplom', 'data', 'Thrust_data')
+
+        self.data = Props_data.parse_prop_spec(self)
+        self.d_keys = sorted(set([i[0] for i in self.data]))
+        self.p_keys = sorted(set([i[1] for i in self.data]))
+        
+    def parse_prop_spec(self) -> list:
+        """Возвращает список [диаметр(float), шаг(float), аббревиатура, имя файла]"""
         with open(self.path_to_prop_spec, 'r') as inf:
             reader = csv.reader(inf, delimiter='\t')
             props = list(reader)[1:]
@@ -31,65 +30,65 @@ class Spares_stats:
 
     def get_prop_data(self, work_name):
         '''Получить подробную статистику конкретного пропеллера (коээфиценты тяги и мощности)'''
-        with open(self.path_to_Thrust_data + work_name, 'r') as inf:
-            data = inf.read().split('\n')[1:-1] #-1 РёР· Р·Р° \n  РІ РєРѕРЅС†Рµ
+        with open(os.path.join(self.path_to_Thrust_data, work_name), 'r') as inf:
+            data = inf.read().split('\n')[1:-1]
             data = [i.split() for i in data]
             data = [[float(j) for j in i] for i in data]
             return data
 
-class Prop:
-    '''Создаёт объект пропа из объекта данных пропа, не считает статистику, только подбирает наиболее похожий пропы
-    data = Spares_stats(prop=True)
-    prop = Prop(data, 5, 2)'''
-    def __init__(self, data: Spares_stats, d: float, p: float, rpm=5000, tk=0.16, pk=0.1):
+class Prop(Props_data):
+    '''Создаёт объект пропа, не считает статистику, только подбирает наиболее похожие пропы
+    prop = Prop(5, 2)'''
+    '''Создаёт объект пропа с переданными параметрами
+    get_real_props - возвращает список наиболее похожих пропов, 
+                     если не передать параметры поиска явно - возьмёт их из атрибутов класса
+                     формат списка - [диаметр, шаг, аббревиатура, имя файла]
+    elect_this - получает на вход список параметров, подставляет их в атрибуты класса
+    '''
+    selection = [[1, 1, 'пропеллер не определён', 'пропеллер не определён']]
+    name = 'ancf'
+    work_name = 'ancf_10x5_static_0755od.txt'
+
+    def __init__(self, d: float, p: float, rpm=5000, tk=0.16, pk=0.1):
         '''Параметры:
         '''
-        self.props_data = data.data
-        self.d_keys = data.d_keys
-        self.p_keys = data.p_keys
+        super().__init__()
         self.d = float(d)
         self.p = float(p)
         self.rpm = int(rpm)
         self.tk = float(tk)
         self.pk = float(pk)
-        self.selection = [[1, 1, 'пропеллер не определён', 'пропеллер не определён']]
-        self.name = 'ancf'
-        self.work_name = 'ancf_10x5_static_0755od.txt'
-        self.done = False
 
-    def re_elect(self, data):
-        """Получает список пропа в формате self.selection и меняет атрибуты объекта"""
-        self.name = data[2]
-        self.work_name = data[3]
+    def elect_this(self, data):
+        """Получает список пропа в формате [диаметр, шаг, аббревиатура, имя файла] и меняет атрибуты объекта"""
         self.d = data[0]
         self.p = data[1]
-        self.tk = Prop.get_tk(self, self.rpm)
-        self.pk = Prop.get_pk(self, self.rpm)
-        
-    def get_tk(self, rpm):
-        """Если проп есть в БД тяг, возвращает коээфицент тяги на определённых rpm, иначе - не меняет коэфф"""
+        self.name = data[2]
+        self.work_name = data[3]
+        self.tk = Prop.get_k(self, self.rpm, 't')
+        self.pk = Prop.get_k(self, self.rpm, 'p')
+            
+    def get_k(self, rpm, mode):
+        t_white_list, p_white_list = ['tk', 't', 'thrust'], ['pk', 'p', 'power']
+        if mode in t_white_list:
+            ind = 1
+        elif mode in p_white_list:
+            ind = 2
+        else:
+            raise "mode указан неверно"
         try:
-            data = Spares_stats.get_prop_data(self, self.work_name)
+            data = Props_data.get_prop_data(self, self.work_name)
         except AttributeError:
+            print(f'данные о винте не найдены, коэффицент {mode} остался прежним')
             return self.tk
         x = np.array([float(i[0]) for i in data])
-        y = np.array([float(i[1]) for i in data])
-        return np.interp(self.rpm, x, y)
-    
-    def get_pk(self, rpm):
-        """Если проп есть в БД тяг, возвращает коээфицент тяги на определённых rpm, иначе - не меняет коэфф"""
-        try:
-            data = Spares_stats.get_prop_data(self, self.work_name)
-        except AttributeError:
-            return self.pk
-        x = np.array([float(i[0]) for i in data])
-        y = np.array([float(i[2]) for i in data])
-        return np.interp(self.rpm, x, y)
+        y = np.array([float(i[ind]) for i in data])
+        return np.interp(rpm, x, y)
 
     def get_real_props(self, d=None, p=None, limit=7):
         """Подбирает список наиболее похожих пропов в БД,
         если не передать диаметр и шаг явно - возьмёт их из объекта пропа"""
-        data = self.props_data
+        data = self.data
         selection = []
         d, p = d if d else self.d, p if p else self.p
         d_sort, p_sort = self.d_keys, self.p_keys
@@ -158,11 +157,10 @@ class Prop:
             else:
                 selection = filter(lambda x: p_near == x[1], data)
             repl = list(sorted(selection, key=lambda x: delta(p_near, x[1]) if d_diff < p_diff else delta(d_near, x[0])))
-            self.name = repl[0][2]
-            self.work_name = repl[0][3]
-            self.selection = repl
-            self.done = True
-            return repl[:5]
+            Prop.name = repl[0][2]
+            Prop.work_name = repl[0][3]
+            Prop.selection = repl
+            return repl[:limit]
 
 class Quad:
     '''Считает статисику переданных в класс объектов деталей'''
@@ -178,7 +176,7 @@ class Quad:
         self.pk = prop.pk
         self.rpm = rpm
         self.air_density = 1.2754
-        data = Spares_stats()
+        data = Props_data()
         self.prop_tp_data = data.get_prop_data(self.prop_work_name)
 
     def calc_thrust(self, rpm, g=False):

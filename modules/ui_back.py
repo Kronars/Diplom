@@ -1,5 +1,5 @@
 from modules.main_win_code import Ui_MainWindow
-from modules.classes import Quad, Prop, Spares_stats
+from modules.classes import Quad, Prop, Props_data
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import numpy as np
@@ -14,7 +14,7 @@ class Ui_backend(Ui_MainWindow):
         self.D_MIN = 2
         self.P_MIN = 0.7
 
-        self.data = Spares_stats(prop=True)
+        self.data = Props_data(prop=True)
         self.prop = Prop(self.data, 5, 5)
         self.prop.get_real_props()
         self.stats = Quad(self.prop)
@@ -48,7 +48,7 @@ class Ui_backend(Ui_MainWindow):
                 continue
         
     def set_prop_conf(self, conf):
-        self.prop.re_elect(conf)
+        self.prop.elect_this(conf)
         d, p, _, _ = conf
         self.correct_all(d, p)
 
