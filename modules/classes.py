@@ -14,6 +14,7 @@ class Props_data:
         
         self.path_to_prop_spec = os.path.join(work_dir, 'Diplom', 'data', 'prop_spec.csv')
         self.path_to_Thrust_data = os.path.join(work_dir, 'Diplom', 'data', 'Thrust_data')
+        self.path_to_plots = os.path.join(work_dir, 'Diplom', 'data')
 
         self.data = Props_data.parse_prop_spec(self)
         self.d_keys = sorted(set([i[0] for i in self.data]))
@@ -45,7 +46,6 @@ class Prop(Props_data):
                      формат списка - [диаметр, шаг, аббревиатура, имя файла]
     elect_this - получает на вход список параметров, подставляет их в атрибуты класса
     '''
-
     def __init__(self, d: float, p: float, rpm=5000, tk=0.16, pk=0.1):
         '''Параметры:
         '''
@@ -60,12 +60,18 @@ class Prop(Props_data):
         self.name = 'ancf'
         self.work_name = 'ancf_10x5_static_0755od.txt'
 
+    def get_params(self):
+        return [self.d, self.p, self.name, self.work_name]
+
     def elect_this(self, data):
         """Получает список пропа в формате [диаметр, шаг, аббревиатура, имя файла] и меняет атрибуты объекта"""
         self.d = data[0]
         self.p = data[1]
         self.name = data[2]
         self.work_name = data[3]
+        if self.name == 'custom.txt':
+            self.tk = 0.16
+            self.pk = 0.1
         self.tk = Prop.get_k(self, self.rpm, 't')
         self.pk = Prop.get_k(self, self.rpm, 'p')
 
@@ -77,11 +83,7 @@ class Prop(Props_data):
             ind = 2
         else:
             raise f"неверно указан режим, получен - {mode}, ожидается: {t_white_list} или {p_white_list}"
-        try:
-            data = Props_data.get_prop_data(self, self.work_name)
-        except AttributeError:
-            print(f'данные о винте не найдены, коэффицент {mode} остался прежним')
-            return self.tk
+        data = Props_data.get_prop_data(self, self.work_name)
         x = np.array([float(i[0]) for i in data])
         y = np.array([float(i[ind]) for i in data])
         return np.interp(rpm, x, y)
@@ -92,17 +94,18 @@ class Prop(Props_data):
         'd' - сортировка по диаметрам 
         'p' - сортировка по шагу'''
         if mode == 'd':
-            nums = self.d_keys
+            ind = 0
         elif mode == 'p':
-            nums = self.p_keys
+            ind = 1
         else:   raise f"неверно указан режим, получен - {mode}, ожидается: 'd' или 'p'"
         delta = lambda x: param - x if param > x else x - param
-        return sorted(nums, key=delta)
+        return sorted(self.data, key=lambda x: delta(x[ind]))
 
-
-    def get_real_props(self, d=None, p=None, limit=20):
+    def get_real_props(self, d=None, p=None, limit=20) -> list:
         """Подбирает список наиболее похожих пропов в БД,
-        если не передать диаметр и шаг явно - возьмёт их из объекта пропа"""
+        если не передать диаметр и шаг явно - возьмёт их из объекта пропа
+        Результат записывается в атрибуты selection, name, work_name
+        Так же возвращает список подобранных пропов"""
         data = self.data
         selection = []
         d, p = d if d else self.d, p if p else self.p
@@ -181,16 +184,6 @@ class Prop_stats(Prop):
     '''Считает статисику переданных в класс объектов деталей'''
     def __init__(self, d: float, p: float, rpm=5000, tk=0.16, pk=0.1):
         super().__init__(d, p)
-        self.path_to_plots = os.path.join(os.getcwd(), 'Diplom', 'data')
-        # self.prop = prop
-        # self.prop_name = prop.name
-        # self.prop_work_name = prop.work_name
-        # self.d = prop.d
-        # self.p = prop.p
-        # self.tk = prop.tk
-        # self.pk = prop.pk
-        # self.rpm = rpm
-        # data = Props_data()
         self.d_cm = self.d / 39.37
         self.air_density = 1.2754
         self.prop_tp_data = self.get_prop_data(self.work_name)
@@ -200,12 +193,14 @@ class Prop_stats(Prop):
 
     def calc_thrust(self, rpm, g=False):
         rpm = int(rpm)
-        thrust = self.tk * self.air_density * (rpm / 60) ** 2 * self.d_cm ** 4
+        d_cm = self.d / 39.37
+        thrust = self.tk * self.air_density * (rpm / 60) ** 2 * d_cm ** 4
         return thrust * 9806 if g else thrust
     
     def calc_power(self, rpm):
         rpm = int(rpm)
-        return self.pk * self.air_density * (rpm / 60) ** 3 * self.d_cm ** 5
+        d_cm = self.d / 39.37
+        return self.pk * self.air_density * (rpm / 60) ** 3 * d_cm ** 5
     
     def draw_prop_stats(self, rpm_x=5000):
         data = self.prop_tp_data
@@ -232,5 +227,5 @@ class Prop_stats(Prop):
         pw_ax.set_xlabel('Обороты в минуту')
         pw_ax.set_ylabel('Ватт')
 
-        plt.savefig(os.path.join(self.path_to_plots, '\plot.png'))
+        plt.savefig(os.path.join(self.path_to_plots, 'plot.png'))
         return f

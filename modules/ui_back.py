@@ -1,8 +1,12 @@
 from modules.main_win_code import Ui_MainWindow
 from modules.classes import Prop_stats, Prop, Props_data
 from PyQt5 import QtCore, QtGui, QtWidgets
-import sys
+import sys, os, re
 import numpy as np
+
+# потеннциальная проблема:
+# 1. двигаешь слайдер -> стираются все комбоБоксы
+# 2. выбираешь проп из комбо бокса -> подставляются параметры пропа в слайдеры = слайдеры двигаются, а теперь смотри пункт 1
 
 class Ui_backend(Ui_MainWindow):
     def __init__(self) -> None:
@@ -12,10 +16,6 @@ class Ui_backend(Ui_MainWindow):
         self.D_MIN = 2
         self.P_MIN = 0.7
 
-        # self.data = Props_data(prop=True)
-        # self.prop = Prop(self.data, 5, 5)
-        # self.prop.get_real_props()
-        # self.stats = Prop_stats(self.prop)
         self.stats = Prop_stats(5, 5)
 
     def setupUi(self, MainWindow):
@@ -34,25 +34,22 @@ class Ui_backend(Ui_MainWindow):
         self.p_num.editingFinished.connect(self.sliders_control)
         self.rpm_num.editingFinished.connect(self.sliders_control)
 
-        self.own_box.clicked.connect(self.selection_control)
-        self.selected_props.textActivated.connect(self.elect_prop)
+        self.d_assort_box.clicked.connect(self.selection_control)
+        self.p_assort_box.clicked.connect(self.selection_control)
+        self.dp_assort_box.clicked.connect(self.selection_control)
 
-    def elect_prop(self):
-        selected = self.selected_props.currentText()
-        for id, item in enumerate(self.data.data):
-            try:
-                self.data.data[id].index(selected+'.txt')
-                self.set_prop_conf(item)
-            except ValueError:
-                continue
-        
-    def set_prop_conf(self, conf):
-        self.prop.elect_this(conf)
-        d, p, _, _ = conf
-        self.correct_all(d, p)
+        self.selected_d_props.textActivated.connect(self.elect_prop)
+        self.selected_p_props.textActivated.connect(self.elect_prop)
+        self.selected_dp_props.textActivated.connect(self.elect_prop)
+    
+    def get_ui_params(self):
+        return [self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt']
 
-    def correct_all(self, d, p):
-        d, p = float(d), float(p)
+    def set_params_to_obj(self, params):
+        self.stats.elect_this(params)
+
+    def set_params_to_ui(self):
+        d, p = self.stats.d, self.stats.p
         d_val = int((d - self.D_MIN) * 10) - 1
         p_val = int((p - self.P_MIN) * 100) - 1
 
@@ -61,60 +58,83 @@ class Ui_backend(Ui_MainWindow):
 
         self.d_slider.setValue(d_val)
         self.p_slider.setValue(p_val)
+
+    def elect_prop(self):
+        send_from = self.mw.sender().objectName()
+        if send_from == 'selected_dp_props':
+            obj = self.selected_dp_props
+        elif send_from == 'selected_d_props':
+            obj = self.selected_d_props
+        elif send_from == 'selected_p_props':
+            obj = self.selected_p_props
+        selected = obj.currentText() + '.txt'
+        match = re.search(r'(\w*)_(\d+.?\d*)x(\d+.?\d*)_', selected)
+        name, d, p = match[1], float(match[2]), float(match[3])
+        prop = [d, p, name, selected]
+        self.set_params_to_obj(prop)
+        self.set_params_to_ui()
         
     def selection_control(self):
-        # who = self.mw.sender().objectName()
-        if self.own_box.checkState():
-            self.fill_combo_box()
-        else:
-            self.selected_props.clear()
+        def fill_combo_box(self, props, box):
+            print(props)
+            for prop in props:
+                print(prop)
+                box.addItem(prop[3][:-4])
+            self.stats.elect_this(props[0])
+            self.sliders_control()
 
-    def fill_combo_box(self):
-        self.calc_stats(from_ui=False)
-        self.prop.get_real_props()
-        for prop in self.prop.selection:
-            self.selected_props.addItem(prop[3][:-4])
-        self.sliders_control()
-        
+        if self.dp_assort_box.checkState():
+            sorted_props = self.stats.get_real_props()
+            box = self.selected_dp_props
+        if self.d_assort_box.checkState():
+            sorted_props = self.stats.sorted_props(self.d_num.value(), 'd')
+            box = self.selected_d_props
+        elif self.p_assort_box.checkState():
+            sorted_props = self.stats.sorted_props(self.p_num.value(), 'p')
+            box = self.selected_p_props
+        fill_combo_box(self, sorted_props, box)
+
     def sliders_control(self):
-        who = self.mw.sender().objectName()
-        sliders_white_list = ['d_slider', 'p_slider', 'rpm_slider']
-        spinBox_white_list = ['d_num', 'p_num', 'rpm_num']
-        if who in sliders_white_list:
-            self.selected_props.clear()
-            self.own_box.setCheckState(False)
-            self.do_sliders()
-        elif who in spinBox_white_list:
-            self.correct_sliders()
-        self.prop.get_real_props()
+        '''Устанавливает в объект пропа параметры со слайдеров
+        Управляет слайдерами диаметра и шага, устанавливает соответсвующие спин боксы
+        Точность спин бокса диаметра до десятых, спин бокса шага - до сотых'''
+        def set_spin_box_val(self):
+            d_val = round(self.slider_d_vals[self.d_slider.sliderPosition()] + 1, 2)
+            p_val = round(self.slider_p_vals[self.p_slider.sliderPosition()] + 1, 2)
+
+            self.d_num.setValue(d_val)
+            self.p_num.setValue(p_val)
+
+        def set_sliders_val(self):
+            d_val = int((self.d_num.value() - self.D_MIN) * 10)
+            p_val = int((self.p_num.value() - self.P_MIN) * 100)
+
+            self.d_slider.setValue(d_val)
+            self.p_slider.setValue(p_val)
+
+        send_from = self.mw.sender().objectName()
+        sliders = ['d_slider', 'p_slider', 'rpm_slider']
+        spinBox = ['d_num', 'p_num', 'rpm_num']
+        if send_from in sliders:
+            set_spin_box_val(self)
+        elif send_from in spinBox:
+            set_sliders_val(self)
+        else:
+            return None
+        self.d_assort_box.setCheckState(False)
+        self.p_assort_box.setCheckState(False)
+        self.dp_assort_box.setCheckState(False)
+        
+        self.selected_dp_props.clear()
+        self.selected_d_props.clear()
+        self.selected_p_props.clear()
+
+        params = [self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt']
+        self.set_params_to_obj(params)
         self.calc_stats()
 
-    def correct_sliders(self):
-        # print('correct sliders')
-        d_val = int((self.d_num.value() - self.D_MIN) * 10)
-        p_val = int((self.p_num.value() - self.P_MIN) * 100)
-
-        self.d_slider.setValue(d_val)
-        self.p_slider.setValue(p_val)
-
-    def do_sliders(self):
-        # print('do sliders')
-        d_val = round(self.slider_d_vals[self.d_slider.sliderPosition()] + 1, 2)
-        p_val = round(self.slider_p_vals[self.p_slider.sliderPosition()] + 1, 2)
-
-        self.d_num.setValue(d_val)
-        self.p_num.setValue(p_val)
-
-    def calc_stats(self, from_ui=True):
-        """Берёт значения из текущего положения спин боксов или объекта и высчитывает статы в лейбл
-        from_ui == True: Значения интерфейса -> Статы
-        from_ui == False: Значения объекта -> Статы"""
-        # print('calc_stats')
-        if from_ui:
-            self.prop = Prop(self.data, self.d_num.value(), self.p_num.value(), self.rpm_num.value())
-        else:
-            self.prop = Prop(self.data, self.prop.d, self.prop.p, self.rpm_num.value())
-        self.stats = Prop_stats(self.prop)
+    def calc_stats(self):
+        """Берёт значения из текущего объекта пропа, рассчитывает на их основе лэйбл и график"""
         thrust = int(self.stats.calc_thrust(self.rpm_num.value()))
         power = int(self.stats.calc_power(self.rpm_num.value()))
         self.thr_vals.setText(f'{round(thrust, 5)} Н\n{round(thrust / 9.806, 5)} кгС\n{round(thrust / 9.806 * 1000, 5)} гС')
@@ -122,9 +142,8 @@ class Ui_backend(Ui_MainWindow):
         self.display_plot()
 
     def display_plot(self):
-        # if self.ready_to_plot:
-        self.stats.draw_prop_stats(r'C:\Users\Senya\Prog_2\Kyrsach\Proga', self.rpm_num.value())
-        pixmap = QtGui.QPixmap(r'C:\Users\Senya\Prog_2\Kyrsach\Proga\plot.png')
+        self.stats.draw_prop_stats(self.rpm_num.value())
+        pixmap = QtGui.QPixmap(os.path.join(self.stats.path_to_plots, 'plot.png'))
         self.plot_pic.setPixmap(pixmap)
 
 if __name__ == '__main__':
