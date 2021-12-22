@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1165</width>
-    <height>764</height>
+    <height>786</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,83 +39,20 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QWidget" name="verticalLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>60</y>
-      <width>802</width>
-      <height>205</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="props_lay">
-     <item>
-      <widget class="QLabel" name="front_prop">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap>../../../../Лена/.designer/backup/resize.png</pixmap>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="side_prop">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap>../../../../Лена/.designer/backup/resize.png</pixmap>
-       </property>
-       <property name="scaledContents">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QComboBox" name="selected_props">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>340</y>
-      <width>801</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="own_box">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>290</y>
-      <width>371</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Подобрать наиболее похожий пропеллер</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="plot_pic">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>390</y>
-      <width>791</width>
-      <height>341</height>
+      <x>340</x>
+      <y>370</y>
+      <width>800</width>
+      <height>400</height>
      </rect>
     </property>
     <property name="text">
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>../../../../Лена/.designer/plot.png</pixmap>
+     <pixmap>../../../Лена/.designer/plot.png</pixmap>
     </property>
    </widget>
    <widget class="QWidget" name="gridLayoutWidget">
@@ -169,7 +106,7 @@
         <number>1</number>
        </property>
        <property name="maximum">
-        <number>1330</number>
+        <number>1230</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -227,16 +164,13 @@
      <item row="5" column="1">
       <widget class="QDoubleSpinBox" name="p_num">
        <property name="minimum">
-        <double>0.700000000000000</double>
+        <double>2.000000000000000</double>
        </property>
        <property name="maximum">
-        <double>14.000000000000000</double>
+        <double>20.000000000000000</double>
        </property>
        <property name="singleStep">
-        <double>0.010000000000000</double>
-       </property>
-       <property name="value">
-        <double>1.000000000000000</double>
+        <double>0.500000000000000</double>
        </property>
       </widget>
      </item>
@@ -358,7 +292,7 @@
       <x>20</x>
       <y>540</y>
       <width>311</width>
-      <height>191</height>
+      <height>211</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="thr_pwr_inp">
@@ -484,26 +418,124 @@
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="gridLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>60</y>
+      <width>801</width>
+      <height>221</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <layout class="QVBoxLayout" name="props_lay">
+       <item>
+        <widget class="QLabel" name="front_prop">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap>../../../Лена/.designer/backup/resize.png</pixmap>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="side_prop">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap>../../../Лена/.designer/backup/resize.png</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>290</y>
+      <width>801</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="comboBoxLay">
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="dp_assort_box">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Подобрать наиболее похожий</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QComboBox" name="selected_dp_props"/>
+     </item>
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="d_assort_box">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Подобрать по диаметру</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QCheckBox" name="p_assort_box">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Подобрать по шагу</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="selected_d_props"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QComboBox" name="selected_p_props"/>
+     </item>
+    </layout>
+   </widget>
   </widget>
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <sender>d_slider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>d_num</receiver>
-   <slot>stepUp()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>217</x>
-     <y>105</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>285</x>
-     <y>101</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>rpm_num</sender>
    <signal>valueChanged(int)</signal>
