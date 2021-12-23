@@ -11,13 +11,3 @@ if __name__ == '__main__':
     ui.setupUi(mainWin)
     mainWin.show()
     sys.exit(app.exec_())
-
-if __name__ == '__main_':
-    from modules.classes import Prop_stats
-    import os
-
-    prop = Prop_stats(3, 5)
-    valid = prop.get_real_props()[1]
-    print(valid)
-    prop.elect_this(valid)
-    print(prop.inf())

@@ -5,8 +5,7 @@ import sys, os, re
 import numpy as np
 
 # потеннциальная проблема:
-# 1. двигаешь слайдер -> стираются все комбоБоксы
-# 2. выбираешь проп из комбо бокса -> подставляются параметры пропа в слайдеры = слайдеры двигаются, а теперь смотри пункт 1
+# 1. некорректно работают боксы, при отжатии кнопки - краш
 
 class Ui_backend(Ui_MainWindow):
     def __init__(self) -> None:
@@ -26,6 +25,10 @@ class Ui_backend(Ui_MainWindow):
         self.slider_d_vals = np.linspace(self.D_MIN, self.D_MAX, self.d_slider.maximum() + 1)
         self.slider_p_vals = np.linspace(self.P_MIN, self.P_MAX, self.p_slider.maximum() + 1)
 
+        # self.d_slider.valueChanged.connect(self.sliders_control)     # Если сделать так, то при изменении слайдера спин боксом
+        # self.p_slider.valueChanged.connect(self.sliders_control)     # будет менятся и другой слайдер
+        # self.rpm_slider.valueChanged.connect(self.sliders_control)
+
         self.d_slider.sliderMoved.connect(self.sliders_control)
         self.p_slider.sliderMoved.connect(self.sliders_control)
         self.rpm_slider.sliderMoved.connect(self.sliders_control)
@@ -38,17 +41,20 @@ class Ui_backend(Ui_MainWindow):
         self.p_assort_box.clicked.connect(self.selection_control)
         self.dp_assort_box.clicked.connect(self.selection_control)
 
-        self.selected_d_props.textActivated.connect(self.elect_prop)
-        self.selected_p_props.textActivated.connect(self.elect_prop)
-        self.selected_dp_props.textActivated.connect(self.elect_prop)
+        self.selected_d_props.textActivated.connect(self.activate_prop)
+        self.selected_p_props.textActivated.connect(self.activate_prop)
+        self.selected_dp_props.textActivated.connect(self.activate_prop)
     
     def get_ui_params(self):
+        '''Возвращает параметры пропа из интерфейса'''
         return [self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt']
 
     def set_params_to_obj(self, params):
+        '''Устанавливает в объект пропа переданные параметры'''
         self.stats.elect_this(params)
 
     def set_params_to_ui(self):
+        '''Устанавливает на слайдеры параметры из объекта пропа'''
         d, p = self.stats.d, self.stats.p
         d_val = int((d - self.D_MIN) * 10) - 1
         p_val = int((p - self.P_MIN) * 100) - 1
@@ -59,7 +65,7 @@ class Ui_backend(Ui_MainWindow):
         self.d_slider.setValue(d_val)
         self.p_slider.setValue(p_val)
 
-    def elect_prop(self):
+    def activate_prop(self):
         send_from = self.mw.sender().objectName()
         if send_from == 'selected_dp_props':
             obj = self.selected_dp_props
@@ -76,21 +82,22 @@ class Ui_backend(Ui_MainWindow):
         
     def selection_control(self):
         def fill_combo_box(self, props, box):
-            print(props)
+            box.clear()
             for prop in props:
-                print(prop)
                 box.addItem(prop[3][:-4])
-            self.stats.elect_this(props[0])
+            self.set_params_to_obj(props[0])
             self.sliders_control()
 
-        if self.dp_assort_box.checkState():
+        if self.dp_assort_box.isChecked():
             sorted_props = self.stats.get_real_props()
             box = self.selected_dp_props
-        if self.d_assort_box.checkState():
-            sorted_props = self.stats.sorted_props(self.d_num.value(), 'd')
+        if self.d_assort_box.isChecked():
+            d = self.get_ui_params()[0]
+            sorted_props = self.stats.sorted_props(d, 'd')
             box = self.selected_d_props
-        elif self.p_assort_box.checkState():
-            sorted_props = self.stats.sorted_props(self.p_num.value(), 'p')
+        elif self.p_assort_box.isChecked():
+            p = self.get_ui_params()[1]
+            sorted_props = self.stats.sorted_props(p, 'p')
             box = self.selected_p_props
         fill_combo_box(self, sorted_props, box)
 
@@ -121,13 +128,13 @@ class Ui_backend(Ui_MainWindow):
             set_sliders_val(self)
         else:
             return None
-        self.d_assort_box.setCheckState(False)
-        self.p_assort_box.setCheckState(False)
-        self.dp_assort_box.setCheckState(False)
+        # self.d_assort_box.setCheckState(False)
+        # self.p_assort_box.setCheckState(False)
+        # self.dp_assort_box.setCheckState(False)
         
-        self.selected_dp_props.clear()
-        self.selected_d_props.clear()
-        self.selected_p_props.clear()
+        # self.selected_dp_props.clear()
+        # self.selected_d_props.clear()
+        # self.selected_p_props.clear()
 
         params = [self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt']
         self.set_params_to_obj(params)
