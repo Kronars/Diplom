@@ -201,31 +201,3 @@ class Prop_stats(Prop):
         rpm = int(rpm)
         d_cm = self.d / 39.37
         return self.pk * self.air_density * (rpm / 60) ** 3 * d_cm ** 5
-    
-    def draw_prop_stats(self, rpm_x=5000):
-        data = self.prop_tp_data
-        f, (th_ax, pw_ax) = plt.subplots(1, 2, gridspec_kw={'wspace': 0.3})
-        f.set_size_inches(8.3, 3.8)
-        
-        rpms = np.linspace(data[0][0] - 400, data[-1][0], 20)
-        thr_rpm_y = Prop_stats.calc_thrust(self, rpm_x, g=1)
-        pwr_rpm_y = Prop_stats.calc_power(self, rpm_x)
-        thr = np.array([(Prop_stats.calc_thrust(self, i, g=1)) for i in rpms])
-        pwr = np.array([(Prop_stats.calc_power(self, i)) for i in rpms])
-
-        th_ax.plot(rpms, thr, color='orange')
-        th_ax.scatter(rpm_x, thr_rpm_y, marker='x', c='red')
-        th_ax.grid(linestyle='--')
-        th_ax.set_title('График тяги ' + self.name)
-        th_ax.set_xlabel('Обороты в минуту')
-        th_ax.set_ylabel('Грамм-силы')
-
-        pw_ax.plot(rpms, pwr)
-        pw_ax.scatter(rpm_x, pwr_rpm_y, marker='x', c='red')
-        pw_ax.grid(linestyle='--')
-        pw_ax.set_title('График требуемой мощности ' + self.name)
-        pw_ax.set_xlabel('Обороты в минуту')
-        pw_ax.set_ylabel('Ватт')
-
-        plt.savefig(os.path.join(self.path_to_plots, 'plot.png'))
-        return f

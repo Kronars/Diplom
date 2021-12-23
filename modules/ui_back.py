@@ -1,6 +1,9 @@
 from modules.main_win_code import Ui_MainWindow
 from modules.classes import Prop_stats, Prop, Props_data
+import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import sys, os, re
 import numpy as np
 
@@ -21,6 +24,10 @@ class Ui_backend(Ui_MainWindow):
         super().setupUi(MainWindow)
 
         self.mw = MainWindow
+
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.plot_lay.addWidget(self.canvas)
 
         self.slider_d_vals = np.linspace(self.D_MIN, self.D_MAX, self.d_slider.maximum() + 1)
         self.slider_p_vals = np.linspace(self.P_MIN, self.P_MAX, self.p_slider.maximum() + 1)
@@ -128,13 +135,6 @@ class Ui_backend(Ui_MainWindow):
             set_sliders_val(self)
         else:
             return None
-        # self.d_assort_box.setCheckState(False)
-        # self.p_assort_box.setCheckState(False)
-        # self.dp_assort_box.setCheckState(False)
-        
-        # self.selected_dp_props.clear()
-        # self.selected_d_props.clear()
-        # self.selected_p_props.clear()
 
         params = [self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt']
         self.set_params_to_obj(params)
@@ -149,9 +149,33 @@ class Ui_backend(Ui_MainWindow):
         self.display_plot()
 
     def display_plot(self):
-        self.stats.draw_prop_stats(self.rpm_num.value())
-        pixmap = QtGui.QPixmap(os.path.join(self.stats.path_to_plots, 'plot.png'))
-        self.plot_pic.setPixmap(pixmap)
+        data = self.stats.prop_tp_data
+        rpm_x = self.rpm_num.value()
+        self.figure.clear()
+        th_ax = self.figure.add_subplot(121)
+        pw_ax = self.figure.add_subplot(122)
+
+        rpms = np.linspace(data[0][0] - 400, data[-1][0], 20)
+        thr_rpm_y = self.stats.calc_thrust(rpm_x, g=1)
+        pwr_rpm_y = self.stats.calc_power(rpm_x)
+        thr = np.array([(self.stats.calc_thrust(i, g=1)) for i in rpms])
+        pwr = np.array([(self.stats.calc_power(i)) for i in rpms])
+        
+        th_ax.plot(rpms, thr, color='orange')
+        th_ax.scatter(rpm_x, thr_rpm_y, marker='x', c='red')
+        th_ax.grid(linestyle='--')
+        th_ax.set_title('График тяги ' + self.stats.name)
+        th_ax.set_xlabel('Обороты в минуту')
+        th_ax.set_ylabel('Грамм-силы')
+
+        pw_ax.plot(rpms, pwr)
+        pw_ax.scatter(rpm_x, pwr_rpm_y, marker='x', c='red')
+        pw_ax.grid(linestyle='--')
+        pw_ax.set_title('График требуемой мощности ' + self.stats.name)
+        pw_ax.set_xlabel('Обороты в минуту')
+        pw_ax.set_ylabel('Ватт')
+
+        self.canvas.draw()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

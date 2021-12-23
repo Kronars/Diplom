@@ -234,6 +234,12 @@ class Ui_MainWindow(object):
         self.p_assort_box = QtWidgets.QRadioButton(self.gridLayoutWidget_3)
         self.p_assort_box.setObjectName("p_assort_box")
         self.comboBoxLay.addWidget(self.p_assort_box, 0, 2, 1, 1)
+        self.horizontalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(340, 380, 811, 391))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.plot_lay = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
+        self.plot_lay.setContentsMargins(0, 0, 0, 0)
+        self.plot_lay.setObjectName("plot_lay")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
