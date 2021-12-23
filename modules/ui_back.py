@@ -31,7 +31,7 @@ class Ui_backend(Ui_MainWindow):
 
         self.d_slider.sliderMoved.connect(self.sliders_control)
         self.p_slider.sliderMoved.connect(self.sliders_control)
-        self.rpm_slider.sliderMoved.connect(self.sliders_control)
+        self.rpm_slider.sliderMoved.connect(self.calc_stats)
 
         self.d_num.editingFinished.connect(self.sliders_control)
         self.p_num.editingFinished.connect(self.sliders_control)
