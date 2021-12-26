@@ -1,4 +1,4 @@
-diam	pitch	short name	full name
+diam	pitch	short name	stats_detail_file	front_pic	side_pic
 8.5	6.0	ance	ance_8.5x6_static_2848cm.txt
 8.5	7.0	ance	ance_8.5x7_static_2875cm.txt
 10.0	12.0	ancf	ancf_10x12_static_0754od.txt
@@ -13,8 +13,6 @@ diam	pitch	short name	full name
 11.0	6.0	ancf	ancf_11x6_static_0874od.txt
 11.0	7.0	ancf	ancf_11x7_static_0854od.txt
 11.0	8.0	ancf	ancf_11x8_static_0846od.txt
-125.0	6.0	ancf	ancf_125x6_static_0924od.txt
-125.0	9.0	ancf	ancf_125x9_static_0905od.txt
 12.0	10.0	ancf	ancf_12x10_static_0720od.txt
 12.0	13.0	ancf	ancf_12x13_static_0780od.txt
 12.0	5.0	ancf	ancf_12x5_static_0789od.txt
@@ -105,10 +103,6 @@ diam	pitch	short name	full name
 9.0	7.0	apcsp	apcsp_9x7_static_kt1009.txt
 9.0	8.0	apcsp	apcsp_9x8_static_2530rd.txt
 9.0	9.0	apcsp	apcsp_9x9_static_2504rd.txt
-45.0	1.0	cfnq	cfnq_45p1_static_1322rd.txt
-45.0	2.0	cfnq	cfnq_45p2_static_1323rd.txt
-45.0	1.0	cfnq	cfnq_45t1_static_1320rd.txt
-45.0	2.0	cfnq	cfnq_45t2_static_1321rd.txt
 5.0	1.58	da4002	da4002_5x1.58_static_1137ga.txt
 5.0	2.65	da4002	da4002_5x2.65_static_1126rd.txt
 5.0	3.75	da4002	da4002_5x3.75_static_1121md.txt
@@ -117,11 +111,7 @@ diam	pitch	short name	full name
 9.0	4.76	da4002	da4002_9x4.76_static_1120ga.txt
 9.0	6.75	da4002	da4002_9x6.75_static_1107rd.txt
 9.0	8.95	da4002	da4002_9x8.95_static_1092rd.txt
-5.0	3.75	da4022	da4022_5x3.75_3b_static_0690md.txt
-5.0	3.75	da4022	da4022_5x3.75_4b_static_0684rd.txt
 5.0	3.75	da4022	da4022_5x3.75_static_0642rb.txt
-9.0	6.75	da4022	da4022_9x6.75_3b_static_0749md.txt
-9.0	6.75	da4022	da4022_9x6.75_4b_static_1086ga.txt
 9.0	6.75	da4022	da4022_9x6.75_static_0767rd.txt
 5.0	1.58	da4052	da4052_5x1.58_static_1160rd.txt
 5.0	2.65	da4052	da4052_5x2.65_static_1142ga.txt
@@ -134,7 +124,6 @@ diam	pitch	short name	full name
 9.0	6.75	da4052	da4052_9x6.75_3b_static_1080ga.txt
 9.0	6.75	da4052	da4052_9x6.75_static_1041rd.txt
 9.0	8.95	da4052	da4052_9x8.95_static_1066ga.txt
-130.0	70.0	ef	ef_130x70_static_0350rd.txt
 10.0	6.0	grcp	grcp_10x6_static_rd0851.txt
 10.0	8.0	grcp	grcp_10x8_static_rd0843.txt
 11.0	4.0	grcp	grcp_11x4_static_rd0550.txt
@@ -158,8 +147,7 @@ diam	pitch	short name	full name
 9.0	7.0	grsn	grsn_9x7_static_rd0936.txt
 10.0	6.0	gwsdd	gwsdd_10x6_static_jb0712.txt
 11.0	7.0	gwsdd	gwsdd_11x7_static_jb0570.txt
-2.5	0.8	gwsdd	gwsdd_2.5x0.8_spec2_static_0465rd.txt
-2.5	0.8	gwsdd	gwsdd_2.5x0.8_spec3_static_0472rd.txt
+2.5	0.8	gwsdd	gwsdd_2.5x0.8_static_0472rd.txt
 2.5	0.8	gwsdd	gwsdd_2.5x0.8_static_0500rd.txt
 2.5	1.0	gwsdd	gwsdd_2.5x1_static_0456rd.txt
 3.0	2.0	gwsdd	gwsdd_3x2_static_0392rd.txt
@@ -169,8 +157,7 @@ diam	pitch	short name	full name
 4.0	2.5	gwsdd	gwsdd_4x2.5_static_0374rd.txt
 4.0	4.0	gwsdd	gwsdd_4x4_static_0437rd.txt
 5.0	3.0	gwsdd	gwsdd_5x3_static_0323rd.txt
-5.0	4.3	gwsdd	gwsdd_5x4.3_spec2_static_0420rd.txt
-5.0	4.3	gwsdd	gwsdd_5x4.3_spec3_static_0428rd.txt
+5.0	4.3	gwsdd	gwsdd_5x4.3_static_0428rd.txt
 5.0	4.3	gwsdd	gwsdd_5x4.3_static_0493rd.txt
 9.0	5.0	gwsdd	gwsdd_9x5_static_0797rd.txt
 9.0	5.0	gwsdd	gwsdd_9x5_static_jb1002.txt

@@ -1,7 +1,6 @@
 import os
 import csv
 import numpy as np
-import matplotlib.pyplot as plt
 
 class Props_data:
     def __init__(self):
@@ -15,10 +14,12 @@ class Props_data:
         self.path_to_prop_spec = os.path.join(work_dir, 'Diplom', 'data', 'prop_spec.csv')
         self.path_to_Thrust_data = os.path.join(work_dir, 'Diplom', 'data', 'Thrust_data')
         self.path_to_plots = os.path.join(work_dir, 'Diplom', 'data')
+        self.path_to_pics = os.path.join(work_dir, 'Diplom', 'data', 'Prop_pics')
 
         self.data = Props_data.parse_prop_spec(self)
         self.d_keys = sorted(set([i[0] for i in self.data]))
         self.p_keys = sorted(set([i[1] for i in self.data]))
+        self.pics_names = os.listdir(self.path_to_pics)
         
     def parse_prop_spec(self) -> list:
         """Возвращает список [диаметр(float), шаг(float), аббревиатура, имя файла]"""
@@ -56,9 +57,10 @@ class Prop(Props_data):
         self.tk = float(tk)
         self.pk = float(pk)
 
-        self.selection = [[10, 5, 'пропеллер не определён', 'пропеллер не определён']]
-        self.name = 'ancf'
-        self.work_name = 'ancf_10x5_static_0755od.txt'
+        self.selection = [[10, 5, 'custom.txt', 'custom.txt']]
+        self.name = 'custom.txt'
+        self.work_name = 'custom.txt'
+
 
     def get_params(self):
         return [self.d, self.p, self.name, self.work_name]
@@ -99,7 +101,9 @@ class Prop(Props_data):
             ind = 1
         else:   raise f"неверно указан режим, получен - {mode}, ожидается: 'd' или 'p'"
         delta = lambda x: param - x if param > x else x - param
-        return sorted(self.data, key=lambda x: delta(x[ind]))
+        selection = sorted(self.data, key=lambda x: delta(x[ind]))
+        self.elect_this(selection[0])
+        return selection
 
     def get_real_props(self, d=None, p=None, limit=20) -> list:
         """Подбирает список наиболее похожих пропов в БД,
@@ -188,7 +192,7 @@ class Prop_stats(Prop):
         self.air_density = 1.2754
         self.prop_tp_data = self.get_prop_data(self.work_name)
         
-    def inf(self):
+    def inf(self) -> str:
         return f'Диаметр {self.d}, шаг, {self.p} имя {self.work_name}'
 
     def calc_thrust(self, rpm, g=False):

@@ -1,14 +1,21 @@
-from modules.main_win_code import Ui_MainWindow
-from modules.classes import Prop_stats, Prop, Props_data
+import os
+import re
+import sys
+
+from PIL import Image
 import matplotlib.pyplot as plt
-from PyQt5 import QtCore, QtGui, QtWidgets
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-import sys, os, re
 import numpy as np
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import \
+    NavigationToolbar2QT as NavigationToolbar
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+from modules.classes import Prop_stats
+from modules.main_win_code import Ui_MainWindow
 
 # потеннциальная проблема:
-# 1. некорректно работают боксы, при отжатии кнопки - краш
+# 1.
 
 class Ui_backend(Ui_MainWindow):
     def __init__(self) -> None:
@@ -54,7 +61,9 @@ class Ui_backend(Ui_MainWindow):
     
     def get_ui_params(self):
         '''Возвращает параметры пропа из интерфейса'''
-        return [self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt']
+        name = self.stats.name if self.stats.name != 'custom.txt' else 'custom.txt'
+        work_name = self.stats.work_name if self.stats.work_name != 'custom.txt' else 'custom.txt'
+        return [self.d_num.value(), self.p_num.value(), name, work_name]
 
     def set_params_to_obj(self, params):
         '''Устанавливает в объект пропа переданные параметры'''
@@ -72,6 +81,9 @@ class Ui_backend(Ui_MainWindow):
         self.d_slider.setValue(d_val)
         self.p_slider.setValue(p_val)
 
+        prop = f'{self.stats.name}_{self.stats.d}x{self.stats.p}'
+        self.curr_prop_name.setText(prop)
+
     def activate_prop(self):
         send_from = self.mw.sender().objectName()
         if send_from == 'selected_dp_props':
@@ -81,11 +93,12 @@ class Ui_backend(Ui_MainWindow):
         elif send_from == 'selected_p_props':
             obj = self.selected_p_props
         selected = obj.currentText() + '.txt'
-        match = re.search(r'(\w*)_(\d+.?\d*)x(\d+.?\d*)_', selected)
+        match = re.search(r'(.*)_(\d+.?\d*)x(\d+.?\d*)_', selected)
         name, d, p = match[1], float(match[2]), float(match[3])
         prop = [d, p, name, selected]
         self.set_params_to_obj(prop)
         self.set_params_to_ui()
+        self.calc_stats()
         
     def selection_control(self):
         def fill_combo_box(self, props, box):
@@ -93,7 +106,8 @@ class Ui_backend(Ui_MainWindow):
             for prop in props:
                 box.addItem(prop[3][:-4])
             self.set_params_to_obj(props[0])
-            self.sliders_control()
+            self.set_params_to_ui()
+            self.calc_stats()
 
         if self.dp_assort_box.isChecked():
             sorted_props = self.stats.get_real_props()
@@ -140,6 +154,7 @@ class Ui_backend(Ui_MainWindow):
         self.set_params_to_obj(params)
         self.calc_stats()
 
+# Вызывается когда параметры пропа подобранны
     def calc_stats(self):
         """Берёт значения из текущего объекта пропа, рассчитывает на их основе лэйбл и график"""
         thrust = int(self.stats.calc_thrust(self.rpm_num.value()))
@@ -147,6 +162,7 @@ class Ui_backend(Ui_MainWindow):
         self.thr_vals.setText(f'{round(thrust, 5)} Н\n{round(thrust / 9.806, 5)} кгС\n{round(thrust / 9.806 * 1000, 5)} гС')
         self.pwr_vals.setText(f'{round(power, 5)} Ватт\n\n')
         self.display_plot()
+        self.display_pics()
 
     def display_plot(self):
         data = self.stats.prop_tp_data
@@ -176,6 +192,35 @@ class Ui_backend(Ui_MainWindow):
         pw_ax.set_ylabel('Ватт')
 
         self.canvas.draw()
+
+    def display_pics(self):
+        wrk_name = self.stats.work_name
+        to_pics = self.stats.path_to_pics
+        to_temp = os.path.join(self.stats.path_to_plots, 'temp')
+        print(wrk_name)
+        if wrk_name == 'custom.txt' or wrk_name == 'custom':
+            print(f'хуита {self.stats.work_name}')
+            return None
+        else:
+            # print(wrk_name, prop, sep='\t')
+            prop = re.search(r'(.*_\d.?\d*x\d.?\d*)_static', self.stats.work_name)[1]
+        
+        front = f'{prop}-front.png'
+        side = f'{prop}-side.png'
+
+        def make_pixmap(name):
+            print('попыт добыть фоток')
+            pic = Image.open(os.path.join(to_pics, name))
+            pic = pic.resize((797, 105))
+            pic.save(os.path.join(to_temp, name))
+            pic = QtGui.QPixmap(os.path.join(to_temp, name))
+            return pic
+        print(front, '\t', side)
+        if front in self.stats.pics_names:
+            self.front_prop.setPixmap(make_pixmap(front))
+        if side in self.stats.pics_names:
+            self.side_prop.setPixmap(make_pixmap(side))
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
