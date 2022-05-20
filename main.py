@@ -1,10 +1,8 @@
-from modules.ui_back import Ui_backend
+from modules.ui_interaction import Ui_backend
 from PyQt5 import QtWidgets
 import sys
 
-# pyuic5 C:\Users\Senya\Prog_2\Diplom\main_win.ui -o C:\Users\Senya\Prog_2\Diplom\modules\main_win_code.py
-
-# Увеличить минимальные значения слайдеру рпм
+# pyuic5 C:\Users\Senya\Prog_2\Diplom_rework\main_win.ui -o C:\Users\Senya\Prog_2\Diplom_rework\modules\main_window.py
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
@@ -13,10 +11,3 @@ if __name__ == '__main__':
     ui.setupUi(mainWin)
     mainWin.show()
     sys.exit(app.exec_())
-
-if __name__ == '__main_':
-    import os
-    from modules.classes import Prop_stats
-    prop = Prop_stats(3, 4)
-    print(prop.path_to_pics)
-    print('\n\n', prop.pics_names)

@@ -5,17 +5,13 @@ import sys
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import \
-    NavigationToolbar2QT as NavigationToolbar
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from modules.classes import Prop_stats
-from modules.main_win_code import Ui_MainWindow
+import pyqtgraph as pg
 
-# потеннциальная проблема:
-# 1.
+# os.chdir(r'C:\Users\Senya\Prog_2\Diplom_rework')
+from modules.classes import Prop_stats
+from modules.main_window import Ui_MainWindow
 
 class Ui_backend(Ui_MainWindow):
     def __init__(self) -> None:
@@ -32,16 +28,20 @@ class Ui_backend(Ui_MainWindow):
 
         self.mw = MainWindow
 
-        self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
-        self.plot_lay.addWidget(self.canvas)
+        self.graphWidget.setBackground('w')
+        self.plt1 = self.graphWidget.addPlot(row=0, col=0, 
+                                x=np.arange(100), y=np.linspace(20, 120, 100))
+        self.plt2 = self.graphWidget.addPlot(row=0, col=1, 
+                                x=np.arange(20), y=np.linspace(20, 120, 20))
+
+        self.plt1.setTitle('Тяга винта', color='k')
+        self.plt2.setTitle('Мощность для вращения', color='k')
+        self.plt1.setLabels(left='Грамм силы', bottom='Оборотов в минуту')
+        self.plt2.setLabels(left='Ватт', bottom='Оборотов в минуту')
+        self.plt1.showGrid(True, True), self.plt2.showGrid(True, True)
 
         self.slider_d_vals = np.linspace(self.D_MIN, self.D_MAX, self.d_slider.maximum() + 1)
         self.slider_p_vals = np.linspace(self.P_MIN, self.P_MAX, self.p_slider.maximum() + 1)
-
-        # self.d_slider.valueChanged.connect(self.sliders_control)     # Если сделать так, то при изменении слайдера спин боксом
-        # self.p_slider.valueChanged.connect(self.sliders_control)     # будет менятся и другой слайдер
-        # self.rpm_slider.valueChanged.connect(self.sliders_control)
 
         self.d_slider.sliderMoved.connect(self.sliders_control)
         self.p_slider.sliderMoved.connect(self.sliders_control)
@@ -51,29 +51,33 @@ class Ui_backend(Ui_MainWindow):
         self.p_num.editingFinished.connect(self.sliders_control)
         self.rpm_num.editingFinished.connect(self.sliders_control)
 
-        self.d_assort_box.clicked.connect(self.selection_control)
-        self.p_assort_box.clicked.connect(self.selection_control)
-        self.dp_assort_box.clicked.connect(self.selection_control)
+        self.air_box.editingFinished.connect(self.calc_stats)
 
-        self.selected_d_props.textActivated.connect(self.activate_prop)
-        self.selected_p_props.textActivated.connect(self.activate_prop)
-        self.selected_dp_props.textActivated.connect(self.activate_prop)
-    
-    def get_ui_params(self):
-        '''Возвращает параметры пропа из интерфейса'''
-        name = self.stats.name if self.stats.name != 'custom.txt' else 'custom.txt'
-        work_name = self.stats.work_name if self.stats.work_name != 'custom.txt' else 'custom.txt'
-        return [self.d_num.value(), self.p_num.value(), name, work_name]
+        self.pk_input.editingFinished.connect(self.coef_editing)
+        self.tk_input.editingFinished.connect(self.coef_editing)
 
-    def set_params_to_obj(self, params):
-        '''Устанавливает в объект пропа переданные параметры'''
-        self.stats.elect_this(params)
+        self.d_assort_box.clicked.connect(self.combo_box_fill_control)
+        self.p_assort_box.clicked.connect(self.combo_box_fill_control)
+        self.dp_assort_box.clicked.connect(self.combo_box_fill_control)
+        self.all_sort_box_fill()
 
-    def set_params_to_ui(self):
+        self.selected_d_props.textActivated.connect(self.combo_box_clicked_control)
+        self.selected_p_props.textActivated.connect(self.combo_box_clicked_control)
+        self.selected_dp_props.textActivated.connect(self.combo_box_clicked_control)
+
+        self.all_sort_box.textActivated.connect(self.combo_box_clicked_control)
+
+    def ui_params(self):
+        '''Параметры винта установленные в интерфейсе'''
+        name = self.curr_prop_name.text()
+        work_name = self.stats.work_name
+        return (self.d_num.value(), self.p_num.value(), name, work_name)
+
+    def update_ui_params(self):
         '''Устанавливает на слайдеры параметры из объекта пропа'''
         d, p = self.stats.d, self.stats.p
-        d_val = int((d - self.D_MIN) * 10) - 1
-        p_val = int((p - self.P_MIN) * 100) - 1
+        d_val = int((d - self.D_MIN) * 10)  # - 1
+        p_val = int((p - self.P_MIN) * 100) #  - 1
 
         self.d_num.setValue(d)
         self.p_num.setValue(p)
@@ -84,51 +88,57 @@ class Ui_backend(Ui_MainWindow):
         prop = f'{self.stats.name}_{self.stats.d}x{self.stats.p}'
         self.curr_prop_name.setText(prop)
 
-    def activate_prop(self):
+    def update_obj_by_name(self, name):
+        '''Устанавливает в объект винта параметры из датасета'''
+        self.stats.elect_by_name(name)
+
+    def update_obj_params(self, params):
+        '''Устанавливает в объект винта переданные параметры'''
+        self.stats.elect_this(params)
+
+    def coef_editing(self):
+        params = (self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt')
+        self.update_obj_params(params)
+        self.curr_prop_name.setText(self.stats.name)
+        self.calc_stats(custom_coef=True)
+
+    def combo_box_clicked_control(self):
         send_from = self.mw.sender().objectName()
-        if send_from == 'selected_dp_props':
-            obj = self.selected_dp_props
-        elif send_from == 'selected_d_props':
-            obj = self.selected_d_props
-        elif send_from == 'selected_p_props':
-            obj = self.selected_p_props
-        selected = obj.currentText() + '.txt'
-        match = re.search(r'(.*)_(\d+.?\d*)x(\d+.?\d*)_', selected)
-        name, d, p = match[1], float(match[2]), float(match[3])
-        prop = [d, p, name, selected]
-        self.set_params_to_obj(prop)
-        self.set_params_to_ui()
+        obj = getattr(self, send_from)
+        selected = obj.currentText()
+        self.update_obj_by_name(selected)
+        self.update_ui_params()
         self.calc_stats()
         
-    def selection_control(self):
-        def fill_combo_box(self, props, box):
-            box.clear()
-            for prop in props:
-                box.addItem(prop[3][:-4])
-            self.set_params_to_obj(props[0])
-            self.set_params_to_ui()
-            self.calc_stats()
-
+    def combo_box_fill_control(self):
+        d, p = self.ui_params()[:2]
         if self.dp_assort_box.isChecked():
-            sorted_props = self.stats.get_real_props()
+            sorted_props = self.stats.two_val_sort(d, p)
             box = self.selected_dp_props
-        if self.d_assort_box.isChecked():
-            d = self.get_ui_params()[0]
-            sorted_props = self.stats.sorted_props(d, 'd')
+        elif self.d_assort_box.isChecked():
+            sorted_props = self.stats.one_val_sort(d, 'diam')
             box = self.selected_d_props
         elif self.p_assort_box.isChecked():
-            p = self.get_ui_params()[1]
-            sorted_props = self.stats.sorted_props(p, 'p')
+            sorted_props = self.stats.one_val_sort(p, 'pitch')
             box = self.selected_p_props
-        fill_combo_box(self, sorted_props, box)
+
+        box.clear()
+        box.addItems(sorted_props)
+        
+        self.update_obj_by_name(sorted_props[0]) #
+        self.update_ui_params()
+        self.calc_stats()
+            
+    def all_sort_box_fill(self):
+        self.all_sort_box.addItems(self.stats.data.index.to_list())
 
     def sliders_control(self):
         '''Устанавливает в объект пропа параметры со слайдеров
         Управляет слайдерами диаметра и шага, устанавливает соответсвующие спин боксы
         Точность спин бокса диаметра до десятых, спин бокса шага - до сотых'''
         def set_spin_box_val(self):
-            d_val = round(self.slider_d_vals[self.d_slider.sliderPosition()] + 1, 2)
-            p_val = round(self.slider_p_vals[self.p_slider.sliderPosition()] + 1, 2)
+            d_val = round(self.slider_d_vals[self.d_slider.sliderPosition()], 2) #  + 1
+            p_val = round(self.slider_p_vals[self.p_slider.sliderPosition()], 2) #  + 1
 
             self.d_num.setValue(d_val)
             self.p_num.setValue(p_val)
@@ -150,72 +160,95 @@ class Ui_backend(Ui_MainWindow):
         else:
             return None
 
-        params = [self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt']
-        self.set_params_to_obj(params)
+        params = (self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt')
+        self.update_obj_params(params)
+        self.curr_prop_name.setText(self.stats.name)
         self.calc_stats()
 
 # Вызывается когда параметры пропа подобранны
-    def calc_stats(self):
+    def calc_stats(self, custom_coef=False):
         """Берёт значения из текущего объекта пропа, рассчитывает на их основе лэйбл и график"""
-        thrust = int(self.stats.calc_thrust(self.rpm_num.value()))
-        power = int(self.stats.calc_power(self.rpm_num.value()))
+        curr_rpm = self.rpm_num.value()
+        air = self.air_box.value()
+
+        if custom_coef:
+            tk, pk = self.tk_input.value(), self.pk_input.value()
+        else:
+            tk = self.stats.get_k(self.stats.work_name, curr_rpm, 'CT')
+            pk = self.stats.get_k(self.stats.work_name, curr_rpm, 'CP')
+
+        self.tk_input.setValue(tk)
+        self.pk_input.setValue(pk)
+
+        thrust = float(self.stats.calc_thrust(curr_rpm, air))
+        power = float(self.stats.calc_power(curr_rpm, air))
         self.thr_vals.setText(f'{round(thrust, 5)} Н\n{round(thrust / 9.806, 5)} кгС\n{round(thrust / 9.806 * 1000, 5)} гС')
         self.pwr_vals.setText(f'{round(power, 5)} Ватт\n\n')
-        self.display_plot()
+
+        self.display_plot(curr_rpm, thrust, power)
         self.display_pics()
 
-    def display_plot(self):
-        data = self.stats.prop_tp_data
-        rpm_x = self.rpm_num.value()
-        self.figure.clear()
-        th_ax = self.figure.add_subplot(121)
-        pw_ax = self.figure.add_subplot(122)
+    def display_plot(self, rpm, thrust, power):
+        self.plt1.clear()
+        self.plt2.clear()
+        data = self.stats.exp_data(self.stats.work_name)
+        exact_range = data.RPM.min() - 400, data.RPM.max() + 700
 
-        rpms = np.linspace(data[0][0] - 400, data[-1][0], 20)
-        thr_rpm_y = self.stats.calc_thrust(rpm_x, g=1)
-        pwr_rpm_y = self.stats.calc_power(rpm_x)
-        thr = np.array([(self.stats.calc_thrust(i, g=1)) for i in rpms])
-        pwr = np.array([(self.stats.calc_power(i)) for i in rpms])
+        thr_rpm_x = pg.TargetItem(
+                pos=(rpm, thrust),
+                size=12,
+                movable=False,
+                symbol='x',
+                pen=pg.mkPen((255, 50, 50))
+                )
+        thr_rpm_x.setLabel(
+            f'{thrust / 9.806 * 1000:.3f} грамм силы\nпри {rpm} RPM',
+            {"color": "#000000"})
+
+        pow_prm_x = pg.TargetItem(
+                pos=(rpm, power),
+                size=12,
+                movable=False,
+                symbol='x',
+                pen=pg.mkPen((255, 50, 50))
+        )
+        pow_prm_x.setLabel(
+            f'{power:.4f} ватт\nпри {rpm} RPM',
+            {"color": "#000000"})
+
+        self.plt1.addItem(thr_rpm_x)
+        self.plt2.addItem(pow_prm_x)
+
+        thr_x = np.arange(exact_range[0], exact_range[1], 50)
         
-        th_ax.plot(rpms, thr, color='orange')
-        th_ax.scatter(rpm_x, thr_rpm_y, marker='x', c='red')
-        th_ax.grid(linestyle='--')
-        th_ax.set_title('График тяги ' + self.stats.name)
-        th_ax.set_xlabel('Обороты в минуту')
-        th_ax.set_ylabel('Грамм-силы')
+        thr_y = [self.stats.calc_thrust(rpm) for rpm in thr_x]
+        pow_y = [self.stats.calc_power(rpm)  for rpm in thr_x]
 
-        pw_ax.plot(rpms, pwr)
-        pw_ax.scatter(rpm_x, pwr_rpm_y, marker='x', c='red')
-        pw_ax.grid(linestyle='--')
-        pw_ax.set_title('График требуемой мощности ' + self.stats.name)
-        pw_ax.set_xlabel('Обороты в минуту')
-        pw_ax.set_ylabel('Ватт')
+        p1_pen = pg.mkPen((255, 183, 0), width=3)
+        p2_pen = pg.mkPen((94, 255, 252), width=3)
 
-        self.canvas.draw()
+        self.plt1.plot(thr_x, thr_y, pen=p1_pen)
+        self.plt2.plot(thr_x, pow_y, pen=p2_pen)
 
     def display_pics(self):
         wrk_name = self.stats.work_name
         to_pics = self.stats.path_to_pics
         to_temp = os.path.join(self.stats.path_to_plots, 'temp')
-        print(wrk_name)
+
         if wrk_name == 'custom.txt' or wrk_name == 'custom':
-            print(f'хуита {self.stats.work_name}')
             return None
         else:
-            # print(wrk_name, prop, sep='\t')
             prop = re.search(r'(.*_\d.?\d*x\d.?\d*)_static', self.stats.work_name)[1]
         
         front = f'{prop}-front.png'
         side = f'{prop}-side.png'
 
         def make_pixmap(name):
-            print('попыт добыть фоток')
             pic = Image.open(os.path.join(to_pics, name))
-            pic = pic.resize((797, 105))
+            pic = pic.resize((859, 166))
             pic.save(os.path.join(to_temp, name))
             pic = QtGui.QPixmap(os.path.join(to_temp, name))
             return pic
-        print(front, '\t', side)
         if front in self.stats.pics_names:
             self.front_prop.setPixmap(make_pixmap(front))
         if side in self.stats.pics_names:
