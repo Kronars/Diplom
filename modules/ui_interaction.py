@@ -3,7 +3,6 @@ import re
 import sys
 
 from PIL import Image
-import matplotlib.pyplot as plt
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -172,7 +171,8 @@ class Ui_backend(Ui_MainWindow):
         air = self.air_box.value()
 
         if custom_coef:
-            tk, pk = self.tk_input.value(), self.pk_input.value()
+            tk = self.stats.get_k('custom.txt', curr_rpm, 'CT')
+            pk = self.stats.get_k('custom.txt', curr_rpm, 'CP')
         else:
             tk = self.stats.get_k(self.stats.work_name, curr_rpm, 'CT')
             pk = self.stats.get_k(self.stats.work_name, curr_rpm, 'CP')
@@ -184,6 +184,11 @@ class Ui_backend(Ui_MainWindow):
         power = float(self.stats.calc_power(curr_rpm, air))
         self.thr_vals.setText(f'{round(thrust, 5)} Н\n{round(thrust / 9.806, 5)} кгС\n{round(thrust / 9.806 * 1000, 5)} гС')
         self.pwr_vals.setText(f'{round(power, 5)} Ватт\n\n')
+
+        self.full_calc.setText(
+f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.stats.d} / 39.37) ^ 4 = {thrust:.4f} Н
+
+Расчёт мощности: {pk:.4f} * {air} * ({curr_rpm} / 60) ^ 3 * ({self.stats.d} / 39.37) ^ 5 = {power:.4f} Ватт''')
 
         self.display_plot(curr_rpm, thrust, power)
         self.display_pics()
