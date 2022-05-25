@@ -4,11 +4,9 @@ import sys
 
 from PIL import Image
 import numpy as np
-from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PyQt5 import QtGui, QtWidgets
 import pyqtgraph as pg
 
-# os.chdir(r'C:\Users\Senya\Prog_2\Diplom_rework')
 from modules.classes import Prop_stats
 from modules.main_window import Ui_MainWindow
 
@@ -21,6 +19,7 @@ class Ui_backend(Ui_MainWindow):
         self.P_MIN = 0.7
 
         self.stats = Prop_stats(5, 5)
+        self.path_to_temp_pics = os.path.join(self.stats.path_to_plots, 'temp')
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
@@ -238,7 +237,7 @@ f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.sta
     def display_pics(self):
         wrk_name = self.stats.work_name
         to_pics = self.stats.path_to_pics
-        to_temp = os.path.join(self.stats.path_to_plots, 'temp')
+        to_temp = self.path_to_temp_pics
 
         if wrk_name == 'custom.txt' or wrk_name == 'custom':
             return None
@@ -251,8 +250,8 @@ f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.sta
         def make_pixmap(name):
             pic = Image.open(os.path.join(to_pics, name))
             pic = pic.resize((859, 166))
-            pic.save(os.path.join(to_temp, name))
-            pic = QtGui.QPixmap(os.path.join(to_temp, name))
+            pic.save(os.path.join(self.path_to_temp_pics, name))
+            pic = QtGui.QPixmap(os.path.join(self.path_to_temp_pics, name))
             return pic
         if front in self.stats.pics_names:
             self.front_prop.setPixmap(make_pixmap(front))
