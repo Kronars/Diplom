@@ -36,12 +36,6 @@ class Data_access:
 class Prop(Data_access):
     '''Создаёт объект пропа, сортирует их по параметрам
     prop = Prop(5, 2)'''
-    '''Создаёт объект пропа с переданными параметрами
-    get_real_props - возвращает список наиболее похожих пропов, 
-                     если не передать параметры поиска явно - возьмёт их из атрибутов класса
-                     формат списка - [диаметр, шаг, аббревиатура, имя файла]
-    elect_this - получает на вход список параметров, подставляет их в атрибуты класса
-    '''
     def __init__(self, d: float, p: float, rpm=5000, tk=0.16, pk=0.1):
         '''Параметры:
         '''
@@ -77,7 +71,7 @@ class Prop(Data_access):
         path = os.path.join(self.path_to_Thrust_data, name)
         if self.check_path(path):
             prp = self.data.loc[name]
-            self.elect_this([prp.diam, prp.pitch, prp.short_name, name])
+            self.elect_this([prp.diam, prp.pitch, prp.full_name, name])
 
     def get_k(self, name, rpm, coef):
         """Коэффициент винта из датасета. 

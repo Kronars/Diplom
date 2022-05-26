@@ -4,11 +4,15 @@ import sys
 
 from PIL import Image
 import numpy as np
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 
-from modules.classes import Prop_stats
-from modules.main_window import Ui_MainWindow
+if __name__ == '__main__':
+    from classes import Prop_stats
+    from main_window import Ui_MainWindow
+else:
+    from modules.classes import Prop_stats
+    from modules.main_window import Ui_MainWindow
 
 class Ui_backend(Ui_MainWindow):
     def __init__(self) -> None:
@@ -83,8 +87,7 @@ class Ui_backend(Ui_MainWindow):
         self.d_slider.setValue(d_val)
         self.p_slider.setValue(p_val)
 
-        prop = f'{self.stats.name}_{self.stats.d}x{self.stats.p}'
-        self.curr_prop_name.setText(prop)
+        self.curr_prop_name.setText(self.stats.name)
 
     def update_obj_by_name(self, name):
         '''Устанавливает в объект винта параметры из датасета'''
@@ -190,7 +193,8 @@ f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.sta
 Расчёт мощности: {pk:.4f} * {air} * ({curr_rpm} / 60) ^ 3 * ({self.stats.d} / 39.37) ^ 5 = {power:.4f} Ватт''')
 
         self.display_plot(curr_rpm, thrust, power)
-        self.display_pics()
+        if self.mw.sender().objectName() != 'rpm_slider':
+            self.display_pics()
 
     def display_plot(self, rpm, thrust, power):
         self.plt1.clear()
@@ -235,31 +239,32 @@ f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.sta
         self.plt2.plot(thr_x, pow_y, pen=p2_pen)
 
     def display_pics(self):
-        wrk_name = self.stats.work_name
+        data = self.stats.data
+        name = self.stats.name
         to_pics = self.stats.path_to_pics
         to_temp = self.path_to_temp_pics
-
-        if wrk_name == 'custom.txt' or wrk_name == 'custom':
-            return None
-        else:
-            prop = re.search(r'(.*_\d.?\d*x\d.?\d*)_static', self.stats.work_name)[1]
         
-        front = f'{prop}-front.png'
-        side = f'{prop}-side.png'
+        res = data[data['full_name'] == name].dropna()
+        if name in ('custom.txt', 'custom') or res.shape[0] == 0:
+            self.side_prop.clear()
+            self.front_prop.clear()
+            return None
 
-        def make_pixmap(name):
-            pic = Image.open(os.path.join(to_pics, name))
-            pic = pic.resize((859, 166))
-            pic.save(os.path.join(self.path_to_temp_pics, name))
-            pic = QtGui.QPixmap(os.path.join(self.path_to_temp_pics, name))
-            return pic
-        if front in self.stats.pics_names:
-            self.front_prop.setPixmap(make_pixmap(front))
-        if side in self.stats.pics_names:
-            self.side_prop.setPixmap(make_pixmap(side))
+        res = res.iloc[0]
+        side_pic  = os.path.join(to_pics, res.side_pic)
+        front_pic = os.path.join(to_pics, res.front_pic)
+
+        size = self.side_prop.size()
+
+        side = QtGui.QPixmap(side_pic).scaled(size, aspectRatioMode=QtCore.Qt.KeepAspectRatio)
+        front = QtGui.QPixmap(front_pic).scaled(size, aspectRatioMode=QtCore.Qt.KeepAspectRatio)
+
+        self.side_prop.setPixmap(side)
+        self.front_prop.setPixmap(front)
 
 
 if __name__ == '__main__':
+    os.chdir(r'C:\Users\Senya\Prog_2\Diplom')
     app = QtWidgets.QApplication(sys.argv)
     mainWin = QtWidgets.QMainWindow()
     ui = Ui_backend()
