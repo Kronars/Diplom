@@ -60,7 +60,7 @@
      <rect>
       <x>10</x>
       <y>40</y>
-      <width>311</width>
+      <width>329</width>
       <height>341</height>
      </rect>
     </property>
@@ -345,6 +345,9 @@
        <property name="text">
         <string>custom</string>
        </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+       </property>
       </widget>
      </item>
      <item row="1" column="1">
@@ -360,6 +363,9 @@
 0.201 кгС
 200 гС</string>
        </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+       </property>
       </widget>
      </item>
      <item row="2" column="1">
@@ -374,6 +380,9 @@
         <string>0.5 Н
 0.201 кгС
 200 гС</string>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
        </property>
       </widget>
      </item>
@@ -470,7 +479,7 @@
       <x>330</x>
       <y>40</y>
       <width>921</width>
-      <height>341</height>
+      <height>321</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="props_lay">
@@ -550,6 +559,9 @@
        <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+       </property>
       </widget>
      </item>
      <item>
@@ -582,6 +594,9 @@
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
        </property>
       </widget>
      </item>
