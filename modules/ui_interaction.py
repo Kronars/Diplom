@@ -1,13 +1,12 @@
 import os
-import re
 import sys
 
-from PIL import Image
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 
 if __name__ == '__main__':
+    """Конструкция для отладки кода"""
     from classes import Prop_stats
     from main_window import Ui_MainWindow
 else:
@@ -15,22 +14,24 @@ else:
     from modules.main_window import Ui_MainWindow
 
 class Ui_backend(Ui_MainWindow):
+    """Обработка событий интерфейса"""
     def __init__(self) -> None:
         super().__init__()
-        self.D_MAX = 20
+        self.D_MAX = 20         # Диапазон значений слайдеров
         self.P_MAX = 14
         self.D_MIN = 2
         self.P_MIN = 0.7
 
-        self.stats = Prop_stats(5, 5)
-        self.path_to_temp_pics = os.path.join(self.stats.path_to_plots, 'temp')
+        self.stats = Prop_stats(5, 5)              # Инициализация объекта винта
 
     def setupUi(self, MainWindow):
+        """Инициализация обработки событий"""
         super().setupUi(MainWindow)
 
-        self.mw = MainWindow
+        self.mw = MainWindow                       # Оъект окна приложения
 
-        self.graphWidget.setBackground('w')
+        self.graphWidget.setBackground('w')        # Белый фон для графиков
+                                                   # Инициализация графиков
         self.plt1 = self.graphWidget.addPlot(row=0, col=0, 
                                 x=np.arange(100), y=np.linspace(20, 120, 100))
         self.plt2 = self.graphWidget.addPlot(row=0, col=1, 
@@ -41,10 +42,10 @@ class Ui_backend(Ui_MainWindow):
         self.plt1.setLabels(left='Грамм силы', bottom='Оборотов в минуту')
         self.plt2.setLabels(left='Ватт', bottom='Оборотов в минуту')
         self.plt1.showGrid(True, True), self.plt2.showGrid(True, True)
-
+                                                   # Установка значений слайдеров
         self.slider_d_vals = np.linspace(self.D_MIN, self.D_MAX, self.d_slider.maximum() + 1)
         self.slider_p_vals = np.linspace(self.P_MIN, self.P_MAX, self.p_slider.maximum() + 1)
-
+                                                   # Подключение функций обработчиков событий к элементам интерфейса
         self.d_slider.sliderMoved.connect(self.sliders_control)
         self.p_slider.sliderMoved.connect(self.sliders_control)
         self.rpm_slider.sliderMoved.connect(self.calc_stats)
@@ -61,7 +62,7 @@ class Ui_backend(Ui_MainWindow):
         self.d_assort_box.clicked.connect(self.combo_box_fill_control)
         self.p_assort_box.clicked.connect(self.combo_box_fill_control)
         self.dp_assort_box.clicked.connect(self.combo_box_fill_control)
-        self.all_sort_box_fill()
+        self.all_sort_box_fill()                   # Заполнение списка всех винтов
 
         self.selected_d_props.textActivated.connect(self.combo_box_clicked_control)
         self.selected_p_props.textActivated.connect(self.combo_box_clicked_control)
@@ -78,8 +79,8 @@ class Ui_backend(Ui_MainWindow):
     def update_ui_params(self):
         '''Устанавливает на слайдеры параметры из объекта пропа'''
         d, p = self.stats.d, self.stats.p
-        d_val = int((d - self.D_MIN) * 10)  # - 1
-        p_val = int((p - self.P_MIN) * 100) #  - 1
+        d_val = int((d - self.D_MIN) * 10)
+        p_val = int((p - self.P_MIN) * 100)
 
         self.d_num.setValue(d)
         self.p_num.setValue(p)
@@ -98,12 +99,14 @@ class Ui_backend(Ui_MainWindow):
         self.stats.elect_this(params)
 
     def coef_editing(self):
+        """Обработчик событий от полей ввода коэффициентов"""
         params = (self.d_num.value(), self.p_num.value(), 'custom.txt', 'custom.txt')
         self.update_obj_params(params)
         self.curr_prop_name.setText(self.stats.name)
         self.calc_stats(custom_coef=True)
 
     def combo_box_clicked_control(self):
+        """Обработчик событий от активации текста комбо боксов сортировки"""
         send_from = self.mw.sender().objectName()
         obj = getattr(self, send_from)
         selected = obj.currentText()
@@ -112,6 +115,7 @@ class Ui_backend(Ui_MainWindow):
         self.calc_stats()
         
     def combo_box_fill_control(self):
+        """Заполнение комбо боксов названиями винтов"""
         d, p = self.ui_params()[:2]
         if self.dp_assort_box.isChecked():
             sorted_props = self.stats.two_val_sort(d, p)
@@ -131,10 +135,11 @@ class Ui_backend(Ui_MainWindow):
         self.calc_stats()
             
     def all_sort_box_fill(self):
+        """Заполнение комбо бокса всех винтов названиями винтов"""
         self.all_sort_box.addItems(self.stats.data.index.to_list())
 
     def sliders_control(self):
-        '''Устанавливает в объект пропа параметры со слайдеров
+        '''Устанавливает в объект винта параметры со слайдеров
         Управляет слайдерами диаметра и шага, устанавливает соответсвующие спин боксы
         Точность спин бокса диаметра до десятых, спин бокса шага - до сотых'''
         def set_spin_box_val(self):
@@ -166,9 +171,9 @@ class Ui_backend(Ui_MainWindow):
         self.curr_prop_name.setText(self.stats.name)
         self.calc_stats()
 
-# Вызывается когда параметры пропа подобранны
     def calc_stats(self, custom_coef=False):
-        """Берёт значения из текущего объекта пропа, рассчитывает на их основе лэйбл и график"""
+        """Рассчитывает на основе установленных в объект параметров силу тяги, 
+        мощность и вызывает отображение графика и изображений"""
         curr_rpm = self.rpm_num.value()
         air = self.air_box.value()
 
@@ -197,6 +202,7 @@ f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.sta
             self.display_pics()
 
     def display_plot(self, rpm, thrust, power):
+        """Отображает график изменения параметров винтов"""
         self.plt1.clear()
         self.plt2.clear()
         data = self.stats.exp_data(self.stats.work_name)
@@ -239,10 +245,10 @@ f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.sta
         self.plt2.plot(thr_x, pow_y, pen=p2_pen)
 
     def display_pics(self):
+        """Отображает изображения винтов, если они есть в датасете"""
         data = self.stats.data
         name = self.stats.name
         to_pics = self.stats.path_to_pics
-        to_temp = self.path_to_temp_pics
         
         res = data[data['full_name'] == name].dropna()
         if name in ('custom.txt', 'custom') or res.shape[0] == 0:
@@ -264,6 +270,7 @@ f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.sta
 
 
 if __name__ == '__main__':
+    """Конструкция для отладки кода"""
     os.chdir(r'C:\Users\Senya\Prog_2\Diplom')
     app = QtWidgets.QApplication(sys.argv)
     mainWin = QtWidgets.QMainWindow()
