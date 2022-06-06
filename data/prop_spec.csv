@@ -99,7 +99,6 @@ diam	pitch	short_name	stats_detail_file	full_name	side_pic	front_pic
 8.0	9.0	apcsp	apcsp_8x9_static_2720rd.txt	apcsp_8x9		
 9.0	10.0	apcsp	apcsp_9x10_static_2513rd.txt	apcsp_9x10		
 9.0	6.0	apcsp	apcsp_9x6_static_0758ga.txt	apcsp_9x6	apcsp_9x6-side.png	apcsp_9x6-front.png
-9.0	6.0	apcsp	apcsp_9x6_static_2532rd.txt	apcsp_9x6	apcsp_9x6-side.png	apcsp_9x6-front.png
 9.0	7.0	apcsp	apcsp_9x7_static_kt1009.txt	apcsp_9x7	apcsp_9x7-side.png	apcsp_9x7-front.png
 9.0	8.0	apcsp	apcsp_9x8_static_2530rd.txt	apcsp_9x8		
 9.0	9.0	apcsp	apcsp_9x9_static_2504rd.txt	apcsp_9x9		
@@ -148,7 +147,6 @@ diam	pitch	short_name	stats_detail_file	full_name	side_pic	front_pic
 10.0	6.0	gwsdd	gwsdd_10x6_static_jb0712.txt	gwsdd_10x6	gwsdd_10x6-side.png	gwsdd_10x6-front.png
 11.0	7.0	gwsdd	gwsdd_11x7_static_jb0570.txt	gwsdd_11x7	gwsdd_11x7-side.png	gwsdd_11x7-front.png
 2.5	0.8	gwsdd	gwsdd_2.5x0.8_static_0472rd.txt	gwsdd_2.5x0.8	gwsdd_2.5x0.8-side.png	gwsdd_2.5x0.8-front.png
-2.5	0.8	gwsdd	gwsdd_2.5x0.8_static_0500rd.txt	gwsdd_2.5x0.8	gwsdd_2.5x0.8-side.png	gwsdd_2.5x0.8-front.png
 2.5	1.0	gwsdd	gwsdd_2.5x1_static_0456rd.txt	gwsdd_2.5x1	gwsdd_2.5x1-side.png	gwsdd_2.5x1-front.png
 3.0	2.0	gwsdd	gwsdd_3x2_static_0392rd.txt	gwsdd_3x2	gwsdd_3x2-side.png	gwsdd_3x2-front.png
 3.0	3.0	gwsdd	gwsdd_3x3_static_0401rd.txt	gwsdd_3x3	gwsdd_3x3-side.png	gwsdd_3x3-front.png
@@ -158,9 +156,7 @@ diam	pitch	short_name	stats_detail_file	full_name	side_pic	front_pic
 4.0	4.0	gwsdd	gwsdd_4x4_static_0437rd.txt	gwsdd_4x4	gwsdd_4x4-side.png	gwsdd_4x4-front.png
 5.0	3.0	gwsdd	gwsdd_5x3_static_0323rd.txt	gwsdd_5x3	gwsdd_5x3-side.png	gwsdd_5x3-front.png
 5.0	4.3	gwsdd	gwsdd_5x4.3_static_0428rd.txt	gwsdd_5x4.3	gwsdd_5x4.3-side.png	gwsdd_5x4.3-front.png
-5.0	4.3	gwsdd	gwsdd_5x4.3_static_0493rd.txt	gwsdd_5x4.3	gwsdd_5x4.3-side.png	gwsdd_5x4.3-front.png
 9.0	5.0	gwsdd	gwsdd_9x5_static_0797rd.txt	gwsdd_9x5	gwsdd_9x5-side.png	gwsdd_9x5-front.png
-9.0	5.0	gwsdd	gwsdd_9x5_static_jb1002.txt	gwsdd_9x5	gwsdd_9x5-side.png	gwsdd_9x5-front.png
 10.0	4.7	gwssf	gwssf_10x4.7_static_jb0875.txt	gwssf_10x4.7	gwssf_10x4.7-side.png	gwssf_10x4.7-front.png
 10.0	8.0	gwssf	gwssf_10x8_static_jb0880.txt	gwssf_10x8	gwssf_10x8-side.png	gwssf_10x8-front.png
 11.0	4.7	gwssf	gwssf_11x4.7_static_jb0563.txt	gwssf_11x4.7	gwssf_11x4.7-side.png	gwssf_11x4.7-front.png
