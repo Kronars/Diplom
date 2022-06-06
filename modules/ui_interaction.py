@@ -194,7 +194,6 @@ class Ui_backend(Ui_MainWindow):
 
         self.full_calc.setText(
 f'''Расчёт тяги: {tk:.4f} * {air} * ({curr_rpm} / 60) ^ 2 * ({self.stats.d} / 39.37) ^ 4 = {thrust:.4f} Н
-
 Расчёт мощности: {pk:.4f} * {air} * ({curr_rpm} / 60) ^ 3 * ({self.stats.d} / 39.37) ^ 5 = {power:.4f} Ватт''')
 
         self.display_plot(curr_rpm, thrust, power)
